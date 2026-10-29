@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#140d07">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>Admin Login — GoldenMail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d0703; --card:#1c0f06; --inset:#120a04; --border:rgba(240,199,120,.16);
+    --accent:#e8b45a; --accent-hot:#f6d894; --accent-deep:#9a6a24; --text:#f7ecd8;
+    --muted:#c9a06a; --faint:#8a6b45; --red:#e07a5a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);
+       min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+       background-image:radial-gradient(700px 380px at 50% -120px,rgba(200,150,60,.25),transparent 70%);}
+  .card{width:100%;max-width:380px;background:linear-gradient(180deg,#241305,var(--card));
+        border:1px solid var(--border);border-radius:18px;padding:28px 24px 24px;
+        box-shadow:0 30px 70px rgba(0,0,0,.6),0 0 40px rgba(217,164,65,.10);position:relative;overflow:hidden}
+  .card::before{content:"";position:absolute;inset:0;border-radius:18px;padding:1px;
+        background:linear-gradient(135deg,rgba(246,216,148,.55),transparent 40%,transparent 60%,rgba(246,216,148,.45));
+        -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+        -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+  .brand{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:6px}
+  .logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#f6d894,#d9a441 55%,#9a6a24);
+        display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(217,164,65,.45),inset 0 1px 0 rgba(255,255,255,.4)}
+  h1{font-size:19px;font-weight:800;letter-spacing:2px;
+     background:linear-gradient(135deg,#f6d894,#d9a441);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{text-align:center;color:var(--muted);font-size:12px;margin-bottom:24px}
+  label{display:block;font-size:11px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;
+        color:var(--muted);margin:0 0 6px}
+  .field{margin-bottom:14px}
+  input{width:100%;height:42px;border-radius:10px;border:1px solid var(--border);background:var(--inset);
+        color:#fff;padding:0 13px;font-size:13px;font-family:inherit;outline:none;transition:.15s}
+  input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,180,90,.12)}
+  button{width:100%;height:44px;margin-top:6px;border:none;border-radius:11px;cursor:pointer;
+         font-family:inherit;font-size:13px;font-weight:800;letter-spacing:.6px;color:#2a1604;
+         background:linear-gradient(135deg,#f8dea8,#e8b45a 55%,#cf9a3f);
+         box-shadow:0 8px 22px rgba(217,164,65,.32),inset 0 1px 0 rgba(255,255,255,.5);transition:.15s}
+  button:hover{filter:brightness(1.05)}
+  button:active{transform:translateY(1px)}
+  button:disabled{opacity:.6;cursor:not-allowed}
+  .err{display:none;margin:0 0 12px;padding:10px 12px;border-radius:9px;font-size:12px;
+       background:rgba(224,122,90,.12);border:1px solid rgba(224,122,90,.35);color:#f0a68f}
+  .err.show{display:block}
+  .foot{margin-top:20px;text-align:center;font-size:11px;color:var(--faint)}
+  .foot a{color:var(--muted);text-decoration:none}
+  .spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(0,0,0,.25);
+        border-top-color:#2a1604;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:7px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<form class="card" id="loginForm" autocomplete="on">
+  <div class="brand">
+    <div class="logo">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+    </div>
+    <h1 id="brand">GOLDENMAIL</h1>
+  </div>
+  <p class="sub">Admin control panel</p>
+
+  <div class="err" id="err"></div>
+
+  <div class="field">
+    <label for="username">Username</label>
+    <input id="username" name="username" type="text" autocomplete="username" required autofocus>
+  </div>
+  <div class="field">
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required>
+  </div>
+
+  <button type="submit" id="submitBtn">Sign in</button>
+  <p class="foot"><a href="/">← Back to mailbox</a></p>
+</form>
+
+<script>
+  const errBox = document.getElementById("err");
+  const btn = document.getElementById("submitBtn");
+
+  function showError(msg) {
+    errBox.textContent = msg;
+    errBox.classList.add("show");
+  }
+
+  document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errBox.classList.remove("show");
+    btn.disabled = true;
+    const original = btn.textContent;
+    btn.innerHTML = '<span class="spin"></span>Signing in…';
+    try {
+      const r = await fetch("/admin/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: document.getElementById("username").value.trim(),
+          password: document.getElementById("password").value,
+        }),
+      });
+      const data = await r.json().catch(() => ({}));
+      if (r.ok && data.ok) { location.href = "/admin"; return; }
+      showError(data.error || "Sign in failed.");
+    } catch (err) {
+      showError("Network error. Is the server running?");
+    }
+    btn.disabled = false;
+    btn.textContent = original;
+  });
+
+  fetch("/api/config").then(r => r.json()).then(c => {
+    if (c.siteName) {
+      document.getElementById("brand").textContent = c.siteName.toUpperCase();
+      document.title = "Admin Login — " + c.siteName;
+    }
+  }).catch(() => {});
+</script>
+</body>
+</html>

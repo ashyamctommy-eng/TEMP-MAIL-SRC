@@ -1,0 +1,25 @@
+{
+  "name": "goldenmail",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GoldenMail \u2014 self-hosted temporary email service with admin panel",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "create-admin": "node server/create-admin.js",
+    "test:e2e": "node test/e2e.js",
+    "setup": "node server/install-setup.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "express": "^5.3.0",
+    "mailparser": "^3.7.4",
+    "nodemailer": "^7.0.9",
+    "sanitize-html": "^2.17.0",
+    "smtp-server": "^3.16.1"
+  }
+}

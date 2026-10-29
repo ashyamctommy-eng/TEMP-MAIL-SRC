@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#140d07">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <title>GoldenMail - Temp Mail</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0703;
+      --card-a: #201004;
+      --card-b: #2a1507;
+      --inset: #120a04;
+      --border: rgba(240, 199, 120, 0.16);
+      --border-soft: rgba(240, 199, 120, 0.08);
+      --accent: #e8b45a;
+      --accent-hot: #f6d894;
+      --accent-deep: #9a6a24;
+      --accent-soft: rgba(232, 180, 90, 0.14);
+      --text: #f7ecd8;
+      --muted: #c9a06a;
+      --faint: #8a6b45;
+      --red: #e07a5a;
+      --dark: #241103;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 12.5px;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 36px;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+    .bg-glow { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background: radial-gradient(620px 320px at 50% -90px, rgba(200, 150, 60, 0.28), transparent 70%); }
+    .app { position: relative; z-index: 1; max-width: 440px; margin: 0 auto;
+           padding: 0 12px; display: flex; flex-direction: column; gap: 10px; }
+
+    .topbar { position: sticky; top: 0; z-index: 60; display: flex; align-items: center;
+              justify-content: space-between; padding: 8px 12px; margin: 0 -12px;
+              background: rgba(20, 13, 7, 0.93); backdrop-filter: blur(12px);
+              -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-soft); }
+    .brand { display: flex; align-items: center; gap: 9px; }
+    .logo { width: 30px; height: 30px; border-radius: 9px; position: relative; overflow: hidden;
+            background: linear-gradient(135deg, #f6d894, #d9a441 55%, #9a6a24);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 16px rgba(217, 164, 65, 0.6), inset 0 1px 0 rgba(255,255,255,0.45); }
+    .logo::after { content: ""; position: absolute; inset: 0;
+            background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.55) 50%, transparent 70%);
+            transform: translateX(-100%); animation: shine 3.8s infinite; }
+    @keyframes shine { 0%, 55% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+    .brand h1 { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 1.5px;
+                  background: linear-gradient(110deg, transparent 35%, rgba(255,255,255,0.9) 50%, transparent 65%),
+                              linear-gradient(135deg, #f6d894, #d9a441);
+                  background-size: 280% 100%, 100% 100%;
+                  -webkit-background-clip: text; background-clip: text; color: transparent;
+                  animation: titleShine 3.8s infinite; }
+    @keyframes titleShine { 0%, 55% { background-position: 130% 0, 0 0; } 100% { background-position: -130% 0, 0 0; } }
+    .icon-btn { width: 32px; height: 32px; border-radius: 10px; border: 1px solid var(--border);
+                background: rgba(255,255,255,0.04); color: var(--text);
+                display: flex; align-items: center; justify-content: center;
+                cursor: pointer; text-decoration: none; transition: 0.15s; flex-shrink: 0; }
+    .icon-btn:active { transform: scale(0.92); background: var(--accent-soft); }
+    .icon-btn.sm { width: 28px; height: 28px; border-radius: 8px; }
+    .icon-btn.menu-btn { width: 40px; height: 40px; border-radius: 11px; }
+    .icon-btn.menu-btn svg { width: 18px; height: 18px; }
+
+    .card { position: relative;
+            background: linear-gradient(180deg, rgba(246,216,148,0.07), rgba(246,216,148,0) 30%), linear-gradient(180deg, #2a1608, var(--card-a));
+            border: 1px solid var(--border-soft); border-radius: 14px;
+            padding: 12px 10px; display: flex; flex-direction: column; gap: 8px;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5), 0 0 24px rgba(217, 164, 65, 0.12); }
+    .card::before, .modal::before { content: ""; position: absolute; inset: -1px; border-radius: 15px; padding: 1px;
+            background: linear-gradient(135deg, rgba(246,216,148,0.6), rgba(246,216,148,0.04) 32%, rgba(246,216,148,0.04) 68%, rgba(246,216,148,0.6));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
+    .card-b { background: linear-gradient(180deg, rgba(246,216,148,0.08), rgba(246,216,148,0) 30%), linear-gradient(180deg, #38200c, var(--card-b)); }
+    .card-label { font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 700;
+                  letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+
+    .input-group { display: flex; background: var(--inset); border: 1px solid var(--border);
+                   border-radius: 10px; overflow: hidden; height: 36px; }
+    .input-group:focus-within { border-color: var(--accent); box-shadow: 0 0 14px rgba(217,164,65,0.18); }
+    .input-group input { flex: 1; background: transparent; border: none; padding: 0 12px;
+                         font-size: 12.5px; font-weight: 600; color: #fff; outline: none;
+                         min-width: 0; font-family: inherit; }
+    .input-group input::placeholder { color: var(--faint); font-weight: 500; }
+    .domain-btn { background: linear-gradient(135deg, rgba(246,216,148,0.22), rgba(154,106,36,0.22));
+                  border: none; border-left: 2px solid; border-image: linear-gradient(180deg, #f6d894, #9a6a24) 1;
+                  box-shadow: inset 0 0 16px rgba(246,216,148,0.16);
+                  padding: 0 10px; font-size: 12.5px; font-weight: 700; color: var(--accent-hot);
+                  display: flex; align-items: center; gap: 5px; cursor: pointer;
+                  flex: 0 0 50%; max-width: 50%; font-family: 'Inter', sans-serif; }
+    .domain-btn span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .btn { height: 36px; border-radius: 10px; font-weight: 700; font-size: 12.5px; border: none;
+           cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px;
+           transition: transform 0.13s, filter 0.13s; font-family: 'Inter', sans-serif; letter-spacing: 0.4px; }
+    .btn:active { transform: scale(0.96); }
+    .btn-primary { background: linear-gradient(135deg, #f6d894, #d9a441 45%, #9a6a24); color: var(--dark);
+                   box-shadow: 0 6px 18px rgba(217, 164, 65, 0.45), inset 0 1px 0 rgba(255,255,255,0.4);
+                   position: relative; overflow: hidden; }
+    .btn-primary::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+                   background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.45) 50%, transparent 65%);
+                   transform: translateX(-110%); animation: btnShine 3.8s infinite; }
+    @keyframes btnShine { 0%, 55% { transform: translateX(-110%); } 100% { transform: translateX(110%); } }
+    .btn-primary:hover { filter: brightness(1.07); }
+    .btn.on { box-shadow: 0 6px 18px rgba(217, 164, 65, 0.55), inset 0 1px 0 rgba(255,255,255,0.4), inset 0 0 0 1.5px rgba(255,240,200,0.45); }
+    .btn-ghost { background: rgba(255,255,255,0.05); color: var(--text); border: 1px solid var(--border); }
+    .btn-forward { background: var(--accent-soft); color: var(--accent);
+                   border: 1px solid var(--border); height: 36px; padding: 0 16px;
+                   border-radius: 10px; font-weight: 700; font-size: 12.5px; cursor: pointer;
+                   font-family: 'Inter', sans-serif; white-space: nowrap; }
+    .btn-forward:active { transform: scale(0.95); }
+
+    .forward-row { display: none; gap: 8px; }
+    .forward-row.show { display: flex; animation: fadeSlide 0.2s ease; }
+    .forward-row input { flex: 1; background: var(--inset); border: 1px solid var(--border);
+                         border-radius: 10px; padding: 0 12px; height: 36px; font-size: 12.5px;
+                         font-weight: 600; color: #fff; outline: none; min-width: 0; font-family: inherit; }
+    .forward-row input::placeholder { color: var(--faint); }
+    .forward-row input:focus { border-color: var(--accent); }
+
+    .email-pill { display: flex; align-items: center; gap: 8px; background: var(--inset);
+                  box-shadow: 0 0 16px rgba(217,164,65,0.08), inset 0 0 12px rgba(217,164,65,0.05);
+                  border: 1px solid var(--border); border-radius: 12px; height: 36px;
+                  padding: 4px 4px 4px 10px; cursor: pointer; }
+    .email-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent);
+                 box-shadow: 0 0 8px var(--accent); flex-shrink: 0; animation: blink 2.4s infinite; }
+    .email-addr { flex: 1; font-size: 12.5px; font-weight: 700; letter-spacing: 0.2px;
+                  color: #fff; white-space: nowrap; overflow-x: auto; scrollbar-width: none; }
+    .email-addr::-webkit-scrollbar { display: none; }
+    .mini-btn { width: 28px; height: 28px; border-radius: 9px; flex-shrink: 0;
+                background: var(--accent-soft); border: 1px solid var(--border);
+                color: var(--accent); display: flex; align-items: center; justify-content: center;
+                cursor: pointer; transition: 0.13s; }
+    .mini-btn:active { transform: scale(0.88); }
+
+    .inbox-head { display: flex; align-items: flex-start; justify-content: space-between; }
+    .inbox-title { display: flex; align-items: center; gap: 8px; font-family: 'Inter', sans-serif;
+                   font-size: 12.5px; font-weight: 800; color: var(--text); padding-top: 2px; }
+    .inbox-title svg { color: var(--accent); }
+    .count-badge { background: var(--accent-soft); border: 1px solid var(--border);
+                   color: var(--accent); font-size: 12.5px; font-weight: 800; font-family: 'Inter', sans-serif;
+                   padding: 1px 9px; border-radius: 99px; }
+    .inbox-actions { display: flex; align-items: center; gap: 7px; }
+
+    .msg-list { display: flex; flex-direction: column; gap: 6px; }
+    .msg { position: relative; background: linear-gradient(135deg, rgba(246,216,148,0.16), rgba(154,106,36,0.16));
+           border: 1px solid rgba(240,199,120,0.25); border-radius: 12px; overflow: hidden;
+           transition: border-color 0.18s; box-shadow: inset 0 0 14px rgba(246,216,148,0.08); }
+    .msg::before { content: ""; position: absolute; inset: 0; border-radius: 12px; padding: 1px;
+           background: linear-gradient(135deg, rgba(246,216,148,0.6), rgba(246,216,148,0.04) 32%, rgba(246,216,148,0.04) 68%, rgba(246,216,148,0.6));
+           -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+           -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+ }
+    .msg.unread { border-color: rgba(240,199,120,0.55);
+           background: linear-gradient(135deg, rgba(246,216,148,0.38), rgba(154,106,36,0.38));
+           box-shadow: inset 0 0 18px rgba(246,216,148,0.18); }
+    .msg.unread .msg-from { color: #ffe9b0; }
+    .msg.unread .msg-subj { color: #ffffff; font-weight: 700; }
+    .msg.open { border-color: rgba(240,199,120,0.5); box-shadow: 0 0 18px rgba(217,164,65,0.15); }
+    .msg-head { display: flex; gap: 8px; padding: 8px 10px; cursor: pointer; align-items: flex-start; }
+    .avatar { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center;
+              justify-content: center; font-weight: 800; font-size: 12.5px; color: #fff8ee; flex-shrink: 0;
+              text-shadow: 0 1px 2px rgba(0,0,0,0.5); font-family: 'Playfair Display', serif; }
+    .msg-main { flex: 1; min-width: 0; }
+    .msg-from { font-size: 12.5px; font-weight: 700; color: #fff; display: flex;
+                align-items: center; gap: 7px; }
+    .msg-from .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .unread-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+                  box-shadow: 0 0 6px var(--accent); flex-shrink: 0; }
+    .msg-subj { font-size: 12.5px; font-weight: 600; color: #f0dcbe; margin-top: 2px;
+                white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .msg-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 7px; flex-shrink: 0; }
+    .msg-time { font-size: 12.5px; color: var(--faint); font-weight: 600; white-space: nowrap; }
+    .msg-del { width: 26px; height: 26px; border-radius: 8px; background: rgba(212, 105, 78, 0.08);
+               border: 1px solid rgba(212, 105, 78, 0.3); color: var(--red);
+               display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .msg-del:active { transform: scale(0.88); }
+    .msg-body { display: none; border-top: 1px solid var(--border-soft); padding: 11px 10px;
+                background: rgba(5, 3, 1, 0.5); overflow-x: auto; word-break: break-word; }
+    .msg.open .msg-body { display: block; animation: fadeSlide 0.2s ease; }
+    @keyframes fadeSlide { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: none; } }
+    .msg-body, .msg-body * { font-size: initial; }
+    .msg-body { color: #f3e8df !important; line-height: 1.6; }
+    .msg-body table, .msg-body td, .msg-body div, .msg-body p, .msg-body span {
+      background-color: transparent !important; color: #f3e8df !important; max-width: 100% !important; }
+    .msg-body img { max-width: 100% !important; height: auto !important; border-radius: 8px; }
+    .msg-body a { color: var(--accent) !important; }
+
+    .attach-list { display: flex; flex-direction: column; gap: 7px; margin-top: 12px;
+                   padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.12); }
+    .attach-label { font-size: 12.5px; font-weight: 800; letter-spacing: 1px;
+                    text-transform: uppercase; color: var(--muted); font-family: 'Inter', sans-serif; }
+    .attach-item { display: flex; align-items: center; gap: 9px; background: var(--accent-soft);
+                   border: 1px solid var(--border); border-radius: 10px; padding: 9px 11px;
+                   color: #fff; text-decoration: none; font-size: 12.5px; font-weight: 600; }
+    .attach-disabled { opacity: 0.45; }
+    .attach-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .attach-size { color: var(--muted); flex-shrink: 0; }
+
+    .skel { border-radius: 12px; border: 1px solid var(--border-soft); padding: 12px;
+            display: flex; gap: 10px; align-items: center; background: rgba(10,6,3,0.4); }
+    .skel .sk-a { width: 36px; height: 36px; border-radius: 11px; flex-shrink: 0; }
+    .skel .sk-b { flex: 1; display: flex; flex-direction: column; gap: 7px; }
+    .skel .sk-l { height: 11px; border-radius: 6px; }
+    .shimmer { background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.04) 75%);
+               background-size: 200% 100%; animation: shimmer 1.3s infinite; }
+    @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+    .empty { text-align: center; padding: 28px 14px; display: flex; flex-direction: column;
+             align-items: center; gap: 10px; }
+    .empty h3 { font-size: 12.5px; font-weight: 800; font-family: 'Inter', sans-serif; letter-spacing: 0.5px; }
+    .empty p { font-size: 12.5px; color: var(--muted); line-height: 1.6; max-width: 250px; }
+
+    .pager { display: flex; justify-content: space-between; align-items: center; padding: 2px; }
+    .pager-info { font-size: 12.5px; font-weight: 700; color: var(--muted); }
+    .pager-btns { display: flex; gap: 7px; }
+    .page-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #fff;
+                padding: 7px 14px; border-radius: 9px; font-size: 12.5px; font-weight: 700;
+                cursor: pointer; font-family: 'Inter', sans-serif; }
+    .page-btn:disabled { opacity: 0.3; }
+    .page-btn:not(:disabled):active { transform: scale(0.94); }
+
+    .sb-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.7);
+                  display: none; }
+    .sb-overlay.show { display: block; }
+    .sb { position: absolute; top: 0; left: 0; width: 80%; max-width: 280px; height: 100%;
+          background: #1c0e05; border-right: 1px solid var(--border);
+          display: flex; flex-direction: column; padding: 8px 12px 12px; gap: 10px;
+          overflow-y: auto; animation: slideIn 0.22s ease; }
+    @keyframes slideIn { from { transform: translateX(-30px); opacity: 0; } }
+    .sb-top { margin: -8px -12px 0; padding: 10px 12px 12px;
+              background: linear-gradient(180deg, #7d5518, #5e3f10); }
+    .sb-head { position: relative; display: flex; justify-content: center; align-items: center; padding: 2px 0 8px; }
+    .sb-menu-title { text-align: center; font-family: 'Inter', sans-serif; font-size: 15px;
+                     font-weight: 800; letter-spacing: 1.5px;
+                     background: linear-gradient(110deg, transparent 35%, rgba(255,255,255,0.9) 50%, transparent 65%),
+                                 linear-gradient(135deg, #f6d894, #d9a441);
+                     background-size: 280% 100%, 100% 100%;
+                     -webkit-background-clip: text; background-clip: text; color: transparent;
+                     animation: titleShine 3.8s infinite; }
+    .sb-title { font-size: 12.5px; font-weight: 700; color: var(--accent-hot); letter-spacing: 2.5px;
+                text-transform: uppercase; font-family: 'Playfair Display', serif; }
+    .sb-close { position: absolute; top: -4px; right: -2px; background: none; border: none; color: var(--accent);
+                font-size: 22px; cursor: pointer; font-weight: 800; padding: 8px 10px; line-height: 1; }
+    .sb-menu { display: flex; flex-direction: column; gap: 6px; }
+    .sb-btn { background: linear-gradient(135deg, #f6d894, #d9a441 45%, #9a6a24); color: var(--dark);
+              padding: 8px 10px; border-radius: 10px; font-size: 12.5px; border: none;
+              font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
+              font-family: inherit; box-shadow: 0 4px 12px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.4); }
+    .sb-divider { height: 3px; border-radius: 99px; margin: 2px 0; position: relative; overflow: hidden;
+              background: linear-gradient(135deg, #f6d894, #d9a441 45%, #9a6a24); }
+    .sb-divider::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+              background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.5) 50%, transparent 65%);
+              transform: translateX(-110%); animation: btnShine 3.8s infinite; }
+    .sb-btn.active { background: #2b150a; color: var(--accent); border: 1px solid rgba(240,199,120,0.5);
+              box-shadow: inset 0 0 12px rgba(217,164,65,0.15); }
+    .sb-list { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
+    .sb-item { position: relative; background: linear-gradient(135deg, rgba(246,216,148,0.10), rgba(154,106,36,0.10));
+               border: 1px solid rgba(240,199,120,0.22); border-radius: 10px;
+               padding: 6px 8px; display: flex; justify-content: space-between; align-items: center; gap: 7px;
+               box-shadow: inset 0 0 10px rgba(246,216,148,0.07); }
+    .sb-item::before { content: ""; position: absolute; inset: 0; border-radius: 10px; padding: 1px;
+               background: linear-gradient(135deg, rgba(246,216,148,0.5), rgba(246,216,148,0.04) 32%, rgba(246,216,148,0.04) 68%, rgba(246,216,148,0.5));
+               -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+               -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
+    .sb-email { font-size: 12.5px; font-weight: 600; color: var(--text);
+                white-space: nowrap; overflow-x: auto; scrollbar-width: none;
+                cursor: pointer; flex: 1; }
+    .sb-email::-webkit-scrollbar { display: none; }
+    .sb-pin { background: var(--accent-soft); border: 1px solid var(--border); border-radius: 8px;
+              color: var(--faint); padding: 6px 7px; cursor: pointer; transition: 0.13s;
+              display: flex; align-items: center; }
+    .sb-pin.on { color: var(--accent); border-color: var(--accent); }
+    .sb-pin.on svg circle { fill: var(--accent); }
+    .sb-empty { text-align: center; color: var(--faint); font-size: 12.5px; font-weight: 600;
+                padding: 16px 8px; border: 1px dashed var(--border); border-radius: 10px; }
+
+    .sb-actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+    .sb-del { background: none; border: none; cursor: pointer; color: var(--faint);
+              padding: 7px 8px; display: flex; align-items: center; border-radius: 8px; transition: 0.13s; }
+    .sb-del:hover { color: var(--red); background: rgba(207, 106, 77, 0.12); }
+    .sb-foot { padding-top: 10px; border-top: 1px solid var(--border-soft); }
+    .sb-clear { margin-top: 2px; width: 100%; background: rgba(207, 106, 77, 0.09);
+                border: 1px solid rgba(207, 106, 77, 0.32); color: var(--red);
+                border-radius: 10px; padding: 10px; font-size: 12.5px; font-weight: 700;
+                cursor: pointer; font-family: inherit; transition: 0.15s; }
+    .sb-clear:active { transform: scale(0.97); }
+
+    .modal-spin { border: 1px solid rgba(240,199,120,0.25); }
+    .modal-spin::before { background: linear-gradient(135deg, rgba(246,216,148,0.6), rgba(246,216,148,0.04) 32%, rgba(246,216,148,0.04) 68%, rgba(246,216,148,0.6));
+ }
+    .modal-overlay { position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.75);
+                     display: none; align-items: center; justify-content: center; padding: 16px; }
+    .modal-overlay.show { display: flex; }
+    .modal { position: relative; background: #221206; border: 1px solid var(--border); border-radius: 16px;
+             width: 100%; max-width: 340px; overflow: hidden; max-height: 80vh;
+             display: flex; flex-direction: column; animation: popIn 0.2s ease;
+             box-shadow: 0 20px 50px rgba(0,0,0,0.55); }
+    @keyframes popIn { from { transform: scale(0.95); opacity: 0; } }
+    .modal-head { padding: 14px 16px; border-bottom: 1px solid var(--border-soft); font-size: 12.5px;
+                  font-weight: 700; font-family: 'Playfair Display', serif; letter-spacing: 0.5px;
+                  display: flex; justify-content: space-between; align-items: center; }
+    .modal-head.danger { color: var(--red); }
+    .domain-head span { flex: 1; text-align: center; font-size: 14px; color: var(--accent-hot); letter-spacing: 1.5px;
+                     font-family: 'Inter', sans-serif; font-weight: 800; }
+    .modal-x { background: none; border: none; color: var(--muted); font-size: 12.5px;
+               cursor: pointer; font-weight: 800; padding: 4px; }
+    .modal-body { padding: 14px 16px; font-size: 12.5px; color: var(--muted); line-height: 1.6;
+                  overflow-y: auto; }
+    .modal-foot { padding: 12px 16px; display: flex; justify-content: flex-end; gap: 8px;
+                  background: rgba(0,0,0,0.3); }
+    .m-btn { padding: 9px 16px; border-radius: 9px; font-size: 12.5px; font-weight: 700;
+             border: none; cursor: pointer; font-family: 'Inter', sans-serif; }
+    .m-cancel { background: rgba(255,255,255,0.08); color: #e2e8f0; }
+    .m-danger { background: #c05a3a; color: #fff; }
+    .domain-list { display: flex; flex-direction: column; gap: 7px; padding: 14px 16px; overflow-y: auto; }
+    .domain-item { position: relative; padding: 8px 10px; font-size: 12.5px; font-weight: 700; color: var(--accent-hot);
+                   cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+                   border: 1px solid rgba(240,199,120,0.25); border-radius: 10px;
+                   background: linear-gradient(135deg, rgba(246,216,148,0.16), rgba(154,106,36,0.16));
+                   box-shadow: inset 0 0 14px rgba(246,216,148,0.10); }
+    .domain-item::before { content: ""; position: absolute; inset: -1px; border-radius: 11px; padding: 1px;
+                   background: linear-gradient(135deg, rgba(246,216,148,0.6), rgba(246,216,148,0.04) 32%, rgba(246,216,148,0.04) 68%, rgba(246,216,148,0.6));
+                   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+                   -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+ }
+    .domain-item:hover, .domain-item.sel { background: linear-gradient(135deg, rgba(246,216,148,0.28), rgba(154,106,36,0.28)); border-color: rgba(240,199,120,0.45); }
+
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(8px);
+             background: #2a1808; border: 1px solid var(--border); color: #fff;
+             padding: 10px 18px; border-radius: 99px; font-size: 12.5px; font-weight: 700;
+             opacity: 0; transition: 0.22s; pointer-events: none; z-index: 400;
+             box-shadow: 0 8px 24px rgba(0,0,0,0.5); white-space: nowrap; max-width: 92vw;
+             overflow: hidden; text-overflow: ellipsis; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (min-width: 900px) {
+      .app { max-width: 920px; display: grid; grid-template-columns: 340px 1fr;
+             gap: 14px; align-items: start; padding-top: 14px; }
+      .topbar { grid-column: 1 / -1; }
+      .compose-card { position: sticky; top: 70px; }
+    }
+  </style>
+</head>
+<body>
+<div class="bg-glow"></div>
+
+<div class="app">
+  <header class="topbar">
+    <button class="icon-btn menu-btn" onclick="toggleSidebar(true)" aria-label="Menu">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>
+    </button>
+    <div class="brand">
+      <div class="logo">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+      </div>
+      <h1 id="brandName">GoldenMail</h1>
+      <div class="logo">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+      </div>
+    </div>
+    <a class="icon-btn menu-btn" id="helpLink" href="https://t.me/MaxTechnical" target="_blank" rel="noopener" aria-label="Help">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>
+    </a>
+  </header>
+
+  <section class="card compose-card">
+    <div class="input-group">
+      <input type="text" id="username" placeholder="custom name..." autocomplete="off" spellcheck="false">
+      <button class="domain-btn" id="domainSelectBtn" onclick="openDomainModal()">
+        <span id="selectedDomainText">@loading</span>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="randomBtn" onclick="generateRandom()">Random</button>
+      <button class="btn btn-primary" onclick="setCustomEmail()">Create</button>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="forwardBtn" onclick="toggleForwardRow()">Forward</button>
+      <button class="btn btn-primary" onclick="shareEmail()">Share</button>
+    </div>
+    <div class="forward-row" id="forwardRow">
+      <input type="email" id="forwardTargetInput" placeholder="name@email.com" autocomplete="off" spellcheck="false">
+      <button class="btn-forward" onclick="saveForwardSetting()">Set</button>
+    </div>
+
+    <div class="email-pill" onclick="copyEmail()" title="Click to copy">
+      <span class="email-dot"></span>
+      <span class="email-addr" id="activeEmail">loading...</span>
+      <button class="mini-btn" onclick="event.stopPropagation();copyEmail()" title="Copy">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+      </button>
+    </div>
+
+  </section>
+
+  <section class="card card-b">
+    <div class="inbox-head">
+      <div class="inbox-title">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
+        Inbox
+        <span class="count-badge" id="inboxCount">0</span>
+      </div>
+      <div class="inbox-actions">
+        <button class="icon-btn sm" onclick="triggerManualRefresh()" title="Refresh">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+        </button>
+      </div>
+    </div>
+    <div id="inboxList" class="msg-list"></div>
+    <div class="pager" id="paginationBar" style="display:none">
+      <span class="pager-info" id="pageInfo"></span>
+      <div class="pager-btns">
+        <button class="page-btn" id="btnPrevPage" onclick="changePage(-1)">&lsaquo; Prev</button>
+        <button class="page-btn" id="btnNextPage" onclick="changePage(1)">Next &rsaquo;</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="sb-overlay" id="sidebarOverlay" onclick="if(event.target===this)toggleSidebar(false)">
+  <div class="sb">
+    <div class="sb-top">
+    <div class="sb-head">
+      <div class="sb-menu-title">GOLDENMAIL</div>
+      <button class="sb-close" onclick="toggleSidebar(false)">&times;</button>
+    </div>
+    <div class="sb-menu">
+      <button class="sb-btn" onclick="sidebarActionNewEmail()">New Email</button>
+      <button class="sb-btn" id="btnTabPin" onclick="switchSidebarTab('pin')"><span id="pinNavText">Pin Email (0)</span></button>
+      <button class="sb-btn active" id="btnTabHistory" onclick="switchSidebarTab('history')"><span id="historyNavText">History Email (0)</span></button>
+    </div>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-list" id="sidebarListContainer"></div>
+    <div class="sb-foot" id="sbFoot" style="display:none">
+      <button class="sb-clear" onclick="clearAllHistory()">Delete all history</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="domainModal" onclick="if(event.target===this)closeDomainModal()">
+  <div class="modal modal-spin">
+    <div class="modal-head domain-head"><span>Select Domain</span><button class="modal-x" onclick="closeDomainModal()">&times;</button></div>
+    <div class="domain-list" id="domainListContainer"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="deleteModal" onclick="if(event.target===this)closeDeleteModal()">
+  <div class="modal">
+    <div class="modal-head danger"><span>Delete message?</span><button class="modal-x" onclick="closeDeleteModal()">&times;</button></div>
+    <div class="modal-body">This message will be permanently deleted.</div>
+    <div class="modal-foot">
+      <button class="m-btn m-cancel" onclick="closeDeleteModal()">Cancel</button>
+      <button class="m-btn m-danger" id="btnConfirmDelete">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let availableDomains = [];
+  let selectedDomain = availableDomains[0] || "";
+  let currentActiveEmail = "";
+
+  let allMessages = [];
+  let currentPage = 1;
+  const PAGE_SIZE = 8;
+
+  let openMessageIds = new Set();
+  let readMessageIds = new Set(JSON.parse(localStorage.getItem("read_msg_ids") || "[]"));
+  let historyEmails = JSON.parse(localStorage.getItem("history_emails") || "[]");
+  let pinnedEmails = JSON.parse(localStorage.getItem("pinned_emails") || "[]");
+  let activeSidebarTab = "history";
+  let pendingDeleteKey = null;
+  let lastMessagesDataString = "";
+  let lastMessageCount = -1;
+  let firstLoad = true;
+
+  function beep() {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      const ctx = new AC();
+      const notes = [1318.5, 1760.0];
+      notes.forEach((freq, idx) => {
+        const t0 = ctx.currentTime + idx * 0.13;
+        const o = ctx.createOscillator(), o2 = ctx.createOscillator(), g = ctx.createGain();
+        o.connect(g); o2.connect(g); g.connect(ctx.destination);
+        o.type = "sine"; o2.type = "sine";
+        o.frequency.setValueAtTime(freq, t0);
+        o2.frequency.setValueAtTime(freq * 2, t0);
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(0.22, t0 + 0.025);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.45);
+        o.start(t0); o2.start(t0); o.stop(t0 + 0.5); o2.stop(t0 + 0.5);
+      });
+    } catch (e) {}
+  }
+
+  function showToast(text) {
+    const t = document.getElementById("toast");
+    t.textContent = text;
+    t.classList.add("show");
+    clearTimeout(t._h);
+    t._h = setTimeout(() => t.classList.remove("show"), 2200);
+  }
+  function escapeHtml(str) {
+    return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function formatBytes(bytes) {
+    if (!bytes) return "0 B";
+    const units = ["B", "KB", "MB", "GB"];
+    let i = 0, n = bytes;
+    while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
+    return (Math.round(n * 10) / 10) + " " + units[i];
+  }
+  function fmtTime(ts) {
+    const d = new Date(ts), now = new Date();
+    const hh = String(d.getHours()).padStart(2, "0"), mm = String(d.getMinutes()).padStart(2, "0");
+    if (d.toDateString() === now.toDateString()) return hh + "." + mm;
+    return d.getDate() + "/" + (d.getMonth() + 1) + " " + hh + "." + mm;
+  }
+  function avatarStyle(name) {
+    let h = 0;
+    for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 100;
+    const hue = 26 + (h % 14), li = 40 + (h % 12);
+    return `background:linear-gradient(135deg,hsl(${hue},52%,${li + 8}%),hsl(${hue},48%,${li - 6}%))`;
+  }
+  function parseSenderDetails(rawFrom) {
+    if (!rawFrom) return { name: "Unknown", email: "?" };
+    let str = rawFrom;
+    try {
+      str = str.replace(/=\?([^?]+)\?([QB])\?([^?]+)\?=/gi, (m, cs, enc, tx) => {
+        try {
+          if (enc.toUpperCase() === "B") return decodeURIComponent(escape(atob(tx)));
+          return tx.replace(/_/g, " ").replace(/=([0-9A-F]{2})/gi, (x, hx) => String.fromCharCode(parseInt(hx, 16)));
+        } catch (e) { return m; }
+      });
+    } catch (e) {}
+    str = str.trim();
+    const em = str.match(/<([^>]+)>/);
+    let email = "", name = "";
+    if (em) { email = em[1].trim(); name = str.split("<")[0].replace(/["']/g, "").trim(); }
+    else { email = str.replace(/["']/g, "").trim(); name = email.split("@")[0]; }
+    if (!name) name = email.split("@")[0] || "Unknown";
+    if (name.indexOf("bounces+") !== -1) name = "System";
+    return { name: name, email: email };
+  }
+
+  function renderDomainList() {
+    const c = document.getElementById("domainListContainer");
+    c.innerHTML = "";
+    availableDomains.forEach(d => {
+      const el = document.createElement("div");
+      el.className = "domain-item" + (d === selectedDomain ? " sel" : "");
+      el.innerHTML = `<span>@${escapeHtml(d)}</span>${d === selectedDomain ? '<span style="color:var(--accent);font-weight:800;">&#10003;</span>' : ''}`;
+      el.onclick = () => {
+        selectedDomain = d;
+        document.getElementById("selectedDomainText").textContent = "@" + d;
+        closeDomainModal(); renderDomainList();
+      };
+      c.appendChild(el);
+    });
+    document.getElementById("selectedDomainText").textContent = "@" + selectedDomain;
+  }
+  function openDomainModal() { document.getElementById("domainModal").classList.add("show"); }
+  function closeDomainModal() { document.getElementById("domainModal").classList.remove("show"); }
+
+  function smartName() {
+    const c = "bcdfghjklmnpqrstvwxyz", v = "aeiou";
+    let n = "";
+    for (let i = 0; i < 3; i++) n += c[Math.floor(Math.random() * c.length)] + v[Math.floor(Math.random() * v.length)];
+    return n + (Math.floor(Math.random() * 900) + 100);
+  }
+  function updateActiveEmail(email, isUserAction) {
+    currentActiveEmail = email.toLowerCase();
+    localStorage.setItem("saved_temp_email", currentActiveEmail);
+    document.getElementById("activeEmail").textContent = currentActiveEmail;
+    saveEmailToHistory(currentActiveEmail);
+    loadForwardSetting(currentActiveEmail);
+    const parts = currentActiveEmail.split("@");
+    if (parts.length === 2) {
+      document.getElementById("username").value = parts[0];
+      selectedDomain = parts[1];
+      renderDomainList();
+    }
+    openMessageIds.clear();
+    lastMessagesDataString = ""; lastMessageCount = -1; currentPage = 1; firstLoad = true;
+    fetchInbox();
+    if (isUserAction) showToast("Email created!");
+  }
+  function setCustomEmail() {
+    if (!selectedDomain) return showToast("No domain configured.");
+    const u = document.getElementById("username").value.trim().toLowerCase().replace(/\s+/g, "");
+    if (!u) return showToast("Enter email name first!");
+    if (!/^[a-z0-9._-]+$/.test(u)) return showToast("Only letters, numbers, dot, _ -");
+    updateActiveEmail(u + "@" + selectedDomain, true);
+  }
+  function generateRandom() {
+    if (!selectedDomain) return showToast("No domain configured.");
+    if (appConfig && appConfig.allowRandom === false) return showToast("Random addresses are disabled.");
+    updateActiveEmail(smartName() + "@" + selectedDomain, true);
+  }
+  // Universal copy: Clipboard API with execCommand fallback (works in all browsers)
+  function copyText(text, okMsg) {
+    function done(ok) { showToast(ok ? (okMsg || "Copied!") : "Copy failed"); }
+    function legacyCopy() {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.setAttribute("readonly", "");
+        ta.style.position = "fixed";
+        ta.style.top = "-9999px";
+        ta.style.left = "-9999px";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        ta.setSelectionRange(0, ta.value.length);
+        const ok = document.execCommand("copy");
+        document.body.removeChild(ta);
+        done(!!ok);
+      } catch (e) { done(false); }
+    }
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+      navigator.clipboard.writeText(text).then(function() { done(true); }, function() { legacyCopy(); });
+    } else {
+      legacyCopy();
+    }
+  }
+  function copyEmail() {
+    if (!currentActiveEmail) return;
+    copyText(currentActiveEmail, "Email copied!");
+  }
+
+  let forwardRowOpen = false;
+  function toggleForwardRow() {
+    const row = document.getElementById("forwardRow");
+    const btn = document.getElementById("forwardBtn");
+    const inp = document.getElementById("forwardTargetInput");
+    forwardRowOpen = !forwardRowOpen;
+    row.classList.toggle("show", forwardRowOpen);
+    btn.classList.toggle("on", forwardRowOpen || !!inp.value.trim());
+    if (forwardRowOpen) {
+      setTimeout(() => inp.focus(), 120);
+    } else if (inp.value.trim()) {
+      inp.value = "";
+      btn.classList.remove("on");
+      saveForwardSetting(true);
+    }
+  }
+  async function loadForwardSetting(email) {
+    const btn = document.getElementById("forwardBtn");
+    const row = document.getElementById("forwardRow");
+    const inp = document.getElementById("forwardTargetInput");
+    try {
+      const r = await fetch("/api/forward?email=" + encodeURIComponent(email));
+      const d = await r.json();
+      inp.value = d.targetEmail || "";
+      const on = !!d.targetEmail;
+      btn.classList.toggle("on", on);
+      forwardRowOpen = on;
+      row.classList.toggle("show", on);
+    } catch (e) { inp.value = ""; btn.classList.remove("on"); forwardRowOpen = false; row.classList.remove("show"); }
+  }
+  async function saveForwardSetting(silent) {
+    if (!currentActiveEmail) return;
+    const target = document.getElementById("forwardTargetInput").value.trim();
+    if (target && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(target)) {
+      forwardRowOpen = true;
+      document.getElementById("forwardRow").classList.add("show");
+      return showToast("Invalid target email format!");
+    }
+    try {
+      if (!silent) showToast("Saving...");
+      const r = await fetch("/api/forward", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: currentActiveEmail, targetEmail: target })
+      });
+      const d = await r.json();
+      if (!silent) showToast(d.success ? (target ? "Forward enabled!" : "Forward disabled.") : "Failed to save.");
+      const btn = document.getElementById("forwardBtn");
+      if (target) { btn.classList.add("on"); }
+      else {
+        btn.classList.remove("on");
+        forwardRowOpen = false;
+        document.getElementById("forwardRow").classList.remove("show");
+      }
+    } catch (e) { if (!silent) showToast("Failed to save."); }
+  }
+
+
+  // ===== Share email link (native share dialog) =====
+  function shareEmail() {
+    if (!currentActiveEmail) return showToast("No active email!");
+    localStorage.setItem("saved_temp_email", currentActiveEmail);
+    const link = location.origin + "/share/" + currentActiveEmail;
+    if (navigator.share) {
+      navigator.share({ title: "GoldenMail", url: link }).catch(function() {});
+    } else {
+      copyText(link, "Share link copied!");
+    }
+  }
+  function triggerManualRefresh() {
+    showToast("Refreshing...");
+    lastMessagesDataString = "";
+    fetchInbox();
+  }
+  function renderSkeleton() {
+    const list = document.getElementById("inboxList");
+    let h = "";
+    for (let i = 0; i < 3; i++) {
+      h += `<div class="skel"><div class="sk-a shimmer"></div><div class="sk-b"><div class="sk-l shimmer" style="width:45%"></div><div class="sk-l shimmer" style="width:80%"></div></div></div>`;
+    }
+    list.innerHTML = h;
+  }
+  async function fetchInbox() {
+    if (!currentActiveEmail) return;
+    if (firstLoad) renderSkeleton();
+    try {
+      const r = await fetch("/api/messages?email=" + encodeURIComponent(currentActiveEmail) + "&_t=" + Date.now(),
+        { headers: { "Cache-Control": "no-cache" } });
+      const data = await r.json();
+      const s = JSON.stringify(data.messages);
+      if (s === lastMessagesDataString) { firstLoad = false; return; }
+      const msgs = data.messages || [];
+      const isNew = lastMessageCount >= 0 && msgs.length > lastMessageCount;
+      lastMessagesDataString = s;
+      lastMessageCount = msgs.length;
+      allMessages = msgs;
+      firstLoad = false;
+      renderInbox();
+      if (isNew) beep();
+    } catch (e) {}
+  }
+  function renderInbox() {
+    const list = document.getElementById("inboxList");
+    const pager = document.getElementById("paginationBar");
+    document.getElementById("inboxCount").textContent = allMessages.length;
+
+    if (!allMessages.length) {
+      pager.style.display = "none";
+      list.innerHTML = `<div class="empty">
+        <svg width="58" height="58" viewBox="0 0 24 24" fill="none" stroke="#f0c778" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+        <h3>No messages yet</h3>
+        <p>Inbox is empty. New messages will appear here automatically.</p>
+      </div>`;
+      return;
+    }
+
+    const totalPages = Math.ceil(allMessages.length / PAGE_SIZE);
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+    const page = allMessages.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+    list.innerHTML = "";
+    page.forEach(msg => {
+      const sender = parseSenderDetails(msg.from);
+      const isOpen = openMessageIds.has(msg.id);
+      const isRead = readMessageIds.has(msg.id);
+      const initial = (sender.name || "?").trim().charAt(0).toUpperCase();
+
+      let bodyHtml = "";
+      if (msg.bodyHtml) bodyHtml = msg.bodyHtml;
+      else bodyHtml = escapeHtml(msg.bodyText).replace(/\n/g, "<br>");
+
+      let attachHtml = "";
+      if (msg.attachments && msg.attachments.length) {
+        attachHtml = `<div class="attach-list"><div class="attach-label">Attachments (${msg.attachments.length})</div>` +
+          msg.attachments.map((a, i) => {
+            const nm = escapeHtml(a.filename || ("file-" + (i + 1)));
+            const sz = formatBytes(a.size || 0);
+            if (a.tooLarge || !a.key)
+              return `<div class="attach-item attach-disabled"><span>\u0001F4CE</span><span class="attach-name">${nm}</span><span class="attach-size">${sz}</span></div>`;
+            return `<a class="attach-item" href="/api/attachment?key=${encodeURIComponent(a.key)}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><span>\u0001F4CE</span><span class="attach-name">${nm}</span><span class="attach-size">${sz}</span></a>`;
+          }).join("") + `</div>`;
+      }
+
+      const el = document.createElement("div");
+      el.className = "msg" + (isOpen ? " open" : "") + (!isRead ? " unread" : "");
+      el.innerHTML = `
+        <div class="msg-head">
+          <div class="avatar" style="${avatarStyle(sender.name)}">${escapeHtml(initial)}</div>
+          <div class="msg-main">
+            <div class="msg-from"><span class="nm">${escapeHtml(sender.name)}</span>${!isRead ? '<span class="unread-dot"></span>' : ''}</div>
+            <div class="msg-subj">${escapeHtml(msg.subject)}</div>
+          </div>
+          <div class="msg-meta">
+            <span class="msg-time">${fmtTime(msg.timestamp)}</span>
+            <button class="msg-del" title="Delete">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
+        </div>
+        <div class="msg-body">${bodyHtml}${attachHtml}</div>`;
+      el.querySelector(".msg-head").addEventListener("click", () => toggleMessage(msg.id));
+      el.querySelector(".msg-del").addEventListener("click", (ev) => { ev.stopPropagation(); requestDeleteMessage(msg.key); });
+      list.appendChild(el);
+    });
+
+    if (totalPages > 1) {
+      pager.style.display = "flex";
+      document.getElementById("pageInfo").textContent = `Page ${currentPage} of ${totalPages}`;
+      document.getElementById("btnPrevPage").disabled = currentPage === 1;
+      document.getElementById("btnNextPage").disabled = currentPage === totalPages;
+    } else pager.style.display = "none";
+  }
+  function changePage(d) { currentPage += d; renderInbox(); }
+  function toggleMessage(id) {
+    if (!readMessageIds.has(id)) {
+      readMessageIds.add(id);
+      try { localStorage.setItem("read_msg_ids", JSON.stringify(Array.from(readMessageIds).slice(-500))); } catch (e) {}
+    }
+    if (openMessageIds.has(id)) openMessageIds.delete(id); else openMessageIds.add(id);
+    renderInbox();
+  }
+
+  function requestDeleteMessage(key) {
+    pendingDeleteKey = key;
+    document.getElementById("deleteModal").classList.add("show");
+  }
+  function closeDeleteModal() {
+    pendingDeleteKey = null;
+    document.getElementById("deleteModal").classList.remove("show");
+  }
+  document.getElementById("btnConfirmDelete").onclick = async () => {
+    if (!pendingDeleteKey) return;
+    const k = pendingDeleteKey;
+    closeDeleteModal();
+    try {
+      showToast("Deleting...");
+      const r = await fetch("/api/messages?key=" + encodeURIComponent(k), { method: "DELETE" });
+      if (r.ok) { showToast("Message deleted."); lastMessagesDataString = ""; fetchInbox(); }
+    } catch (e) {}
+  };
+
+  function toggleSidebar(show) {
+    document.getElementById("sidebarOverlay").classList.toggle("show", !!show);
+    if (show) renderSidebarList();
+  }
+  function switchSidebarTab(tab) {
+    activeSidebarTab = tab;
+    document.getElementById("btnTabPin").classList.toggle("active", tab === "pin");
+    document.getElementById("btnTabHistory").classList.toggle("active", tab === "history");
+    renderSidebarList();
+  }
+  function updateSidebarCounters() {
+    document.getElementById("pinNavText").textContent = `Pin Email (${pinnedEmails.length})`;
+    document.getElementById("historyNavText").textContent = `History Email (${historyEmails.length})`;
+  }
+  function saveEmailToHistory(email) {
+    historyEmails = historyEmails.filter(e => e.toLowerCase() !== email.toLowerCase());
+    historyEmails.unshift(email);
+    historyEmails = historyEmails.slice(0, 50);
+    try { localStorage.setItem("history_emails", JSON.stringify(historyEmails)); } catch (e) {}
+    updateSidebarCounters();
+  }
+  function togglePinEmail(email, ev) {
+    if (ev) ev.stopPropagation();
+    if (pinnedEmails.includes(email)) {
+      pinnedEmails = pinnedEmails.filter(e => e !== email);
+      showToast("Unpinned.");
+    } else {
+      pinnedEmails.push(email);
+      showToast("Email pinned!");
+    }
+    try { localStorage.setItem("pinned_emails", JSON.stringify(pinnedEmails)); } catch (e) {}
+    updateSidebarCounters(); renderSidebarList();
+  }
+  function renderSidebarList() {
+    updateSidebarCounters();
+    const c = document.getElementById("sidebarListContainer");
+    c.innerHTML = "";
+    const arr = activeSidebarTab === "pin" ? pinnedEmails : historyEmails;
+    const foot = document.getElementById("sbFoot");
+    if (foot) foot.style.display = (activeSidebarTab === "history" && arr.length) ? "block" : "none";
+    if (!arr.length) { c.innerHTML = '<div class="sb-empty">Empty list.</div>'; return; }
+    arr.forEach(email => {
+      const pinned = pinnedEmails.includes(email);
+      const el = document.createElement("div");
+      el.className = "sb-item";
+      el.innerHTML = `<span class="sb-email">${escapeHtml(email)}</span><span class="sb-actions"><button class="sb-pin${pinned ? ' on' : ''}" title="Pin"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7.5" r="4.5"/><path d="M12 12v8"/></svg></button>` +
+        (activeSidebarTab === "history"
+          ? `<button class="sb-del" title="Remove"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`
+          : ``) +
+        `</span>`;
+      el.querySelector(".sb-email").addEventListener("click", () => {
+        updateActiveEmail(email, false); toggleSidebar(false); showToast("Email loaded!");
+      });
+      el.querySelector(".sb-pin").addEventListener("click", (ev) => togglePinEmail(email, ev));
+      const delBtn = el.querySelector(".sb-del");
+      if (delBtn) delBtn.addEventListener("click", (ev) => removeHistoryEmail(email, ev));
+      c.appendChild(el);
+    });
+  }
+  function removeHistoryEmail(email, ev) {
+    if (ev) ev.stopPropagation();
+    historyEmails = historyEmails.filter(e => e !== email);
+    try { localStorage.setItem("history_emails", JSON.stringify(historyEmails)); } catch (e) {}
+    updateSidebarCounters(); renderSidebarList();
+    showToast("Removed from history.");
+  }
+  function clearAllHistory() {
+    historyEmails = [];
+    try { localStorage.setItem("history_emails", JSON.stringify(historyEmails)); } catch (e) {}
+    updateSidebarCounters(); renderSidebarList();
+    showToast("History cleared.");
+  }
+  function sidebarActionNewEmail() { toggleSidebar(false); generateRandom(); }
+
+  let appConfig = { siteName: "GoldenMail", tagline: "Temp Mail", pollInterval: 3000, supportUrl: "", allowRandom: true };
+
+  async function loadConfig() {
+    try {
+      const r = await fetch("/api/config", { headers: { "Cache-Control": "no-cache" } });
+      if (r.ok) appConfig = Object.assign(appConfig, await r.json());
+    } catch (e) {}
+    availableDomains = Array.isArray(appConfig.domains) ? appConfig.domains : [];
+    selectedDomain = appConfig.defaultDomain || availableDomains[0] || "";
+
+    if (appConfig.siteName) {
+      document.getElementById("brandName").textContent = appConfig.siteName;
+      document.title = appConfig.siteName + " - " + (appConfig.tagline || "Temp Mail");
+    }
+    const help = document.getElementById("helpLink");
+    if (appConfig.supportUrl) help.href = appConfig.supportUrl; else help.style.display = "none";
+    if (appConfig.allowRandom === false) {
+      const rb = document.getElementById("randomBtn");
+      rb.disabled = true; rb.style.opacity = ".45"; rb.style.cursor = "not-allowed";
+    }
+    renderDomainList();
+  }
+
+  window.onload = async () => {
+    await loadConfig();
+    updateSidebarCounters();
+
+    if (!availableDomains.length) {
+      document.getElementById("activeEmail").textContent = "no domain configured";
+      showToast("Service is not configured yet.");
+      return;
+    }
+
+    const shareMatch = location.pathname.match(new RegExp("^/share/([^/]+)/?$", "i"));
+    let sharedEmail = "";
+    if (shareMatch) {
+      const em = decodeURIComponent(shareMatch[1]).toLowerCase().trim();
+      const sp = em.split("@");
+      if (sp.length === 2 && sp[0] && availableDomains.includes(sp[1])) sharedEmail = em;
+    }
+    if (sharedEmail) updateActiveEmail(sharedEmail, false);
+    else {
+      const saved = localStorage.getItem("saved_temp_email");
+      if (saved) updateActiveEmail(saved, false);
+      else generateRandom();
+    }
+    setInterval(fetchInbox, Math.max(1000, Number(appConfig.pollInterval) || 3000));
+  };
+</script>
+</body>
+</html>
